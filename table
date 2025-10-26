@@ -1,0 +1,19 @@
+CREATE TABLE dictionary_rules (
+    
+    -- 규칙의 고유 ID (자동 증가)
+    rule_id SERIAL PRIMARY KEY,
+    
+    -- (⭐️ 가장 중요) 사전의 종류를 구분하는 '타입'
+    --  - 4단계 보안용: 'PII_NAME', 'PII_ADDR', 'PII_BRAND_MODEL' 등
+    --  - 5단계 표준화용: 'SYNONYM' (동의어), 'TYPO' (오탈자)
+    rule_type VARCHAR(30) NOT NULL,
+    
+    -- (Key) 사용자가 입력할 '날것의 단어' (찾을 대상)
+    --  - 예: '대졸', '맛난거', '겔럭시'
+    --  - (3단계에서 소문자화되므로, 이 값도 소문자로 저장하는 것이 효율적)
+    term_from TEXT NOT NULL UNIQUE,
+    
+    -- (Value) 변환될 '표준 단어'
+    --  - 예: '대학교 졸업', '맛있는 음식 먹기', '갤럭시'
+    term_to TEXT NOT NULL
+);
