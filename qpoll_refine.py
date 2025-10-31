@@ -29,7 +29,7 @@ typo_map = {
 
 
 # --- 🤖 Gemini API 설정 ---
-API_KEY = "AIzaSyB101Dwr8gXgWx-3Owg-McOGhdxZtbOuDk" # 1. 사용자가 입력한 API 키
+API_KEY = "" # 1. 사용자가 입력한 API 키
 # 📌 수정: 올바른 API 모델 이름으로 변경
 model_name = "gemini-2.0-flash" 
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={API_KEY}"
