@@ -13,16 +13,16 @@ import sys
 # --- 1. 설정 (사용자님 설정) ---
 # PostgreSQL 설정
 DB_SETTINGS = {
-    "dbname": "final",      # 👈 데이터베이스 이름
-    "user": "kjw8567",      # 👈 사용자 이름
-    "password": "8567",     # 👈 비밀번호
-    "host": "localhost",
+    "dbname": "?",      # 👈 데이터베이스 이름
+    "user": "?",      # 👈 사용자 이름
+    "password": "?",     # 👈 비밀번호
+    "host": "?",
     "port": "5432"
 }
 
 # Redis 설정
 REDIS_SETTINGS = {
-    "host": "127.0.0.1",    # 또는 "localhost"
+    "host": "?",    # 또는 "localhost"
     "port": 6379,           # Redis 기본 포트
     "password": None,       # Redis 비밀번호 있으면 입력
     "db": 0,                # 기본 데이터베이스 번호
