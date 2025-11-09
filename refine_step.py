@@ -16,7 +16,7 @@ import re
 class PreNormalizer:
     """
     토큰화 이전에 오탈자(typo)와 동의어(synonym)를 모두 처리하는 정규화기
-    [수정됨] "연쇄 치환"을 방지하기 위해 re.sub()를 사용 (Non-Chaining)
+    "연쇄 치환"을 방지하기 위해 re.sub()를 사용 (Non-Chaining)
     """
     
     def __init__(self, typo_rules: Dict[str, str], synonym_rules: Dict[str, str]):
@@ -34,7 +34,7 @@ class PreNormalizer:
         sorted_keys = sorted(self.rules_map.keys(), key=len, reverse=True)
         
         # 2. 키들을 Regex의 | (OR) 연산자로 결합
-        # [수정됨] "단어 경계"(\b)를 제거.
+        # "단어 경계"(\b)를 제거.
         # "돈 문제로" 같은 조사가 붙는 경우를 처리하기 위함.
         # "만족도" 문제는 DB에 "만족도":"만족도" 규칙을 추가하여 해결 필요.
         try:
@@ -69,7 +69,7 @@ class PreNormalizer:
             # Regex 컴파일 실패 시 원본 텍스트 반환
             return text
             
-        # [수정됨] re.sub()를 사용하여 "연쇄 치환" 없이 단 한 번만 교체
+        # re.sub()를 사용하여 "연쇄 치환" 없이 단 한 번만 교체
         return self.regex_pattern.sub(self._replacer, text)
 
 
@@ -126,7 +126,7 @@ class TextNormalizer:
         synonym_rules = self.redis_client.hgetall('synonym_rules')
         print(f"  - SYNONYM 규칙: {len(synonym_rules)}개")
         
-        # [수정됨] 정규화기 초기화
+        # 정규화기 초기화
         # 두 규칙을 모두 PreNormalizer에 전달
         self.pre_normalizer = PreNormalizer(typo_rules, synonym_rules)
         
@@ -139,7 +139,7 @@ class TextNormalizer:
     
     def _preprocess(self, text: str) -> str:
         """
-        [추가됨] 0단계: 가장 기본적인 텍스트 전처리 (사전 정규화 전)
+       0단계: 가장 기본적인 텍스트 전처리 (사전 정규화 전)
         """
         # 1. 양쪽 끝 공백 제거
         text = text.strip()
@@ -147,7 +147,7 @@ class TextNormalizer:
         # 2. '허용 목록' 외 모든 문자 제거 (이모티콘, 특수문자, 자/모음 등)
         # 허용: 한글(가-힣), 영문(a-z, A-Z), 숫자(0-9), 구두점(~/), 공백
         # [^...]: ...을 제외한 모든 문자
-        # [수정됨] 허용 목록에서 '?', '.', '!' 제거
+        # 허용 목록에서 '?', '.', '!' 제거
         text = re.sub(r'[^가-힣a-zA-Z0-9~/ ]', '', text)
         
         # 3. 중간의 여러 공백을 하나로 합침
@@ -207,7 +207,7 @@ class TextNormalizer:
         return final_text
 
 
-# [수정됨]
+
 # 데모 함수들(demo, batch_normalize_demo, interactive_demo)을 삭제하고,
 # 이 파일이 모듈로서 import될 수 있도록 정리했습니다.
 # 아래의 __name__ == '__main__' 부분은
