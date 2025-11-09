@@ -2,12 +2,12 @@ import psycopg2
 import sys
 import subprocess # (필수!) 다른 스크립트를 실행하기 위해 import
 
-# --- 1. 설정 (사용자님 설정) ---
+# --- 1. 설정  ---
 DB_SETTINGS = {
-    "dbname": "final",
-    "user": "kjw8567",
-    "password": "8567",
-    "host": "localhost",
+    "dbname": "??",
+    "user": "??",
+    "password": "??",
+    "host": "??",
     "port": "5432"
 }
 
