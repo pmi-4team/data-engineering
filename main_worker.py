@@ -4,7 +4,7 @@ import redis
 import psycopg2
 import sys
 
-# [수정됨] 설정 및 DB 함수만 import
+# 설정 및 DB 함수만 import
 from config import REDIS_SETTINGS
 from db_utils import (
     get_db_connection,
@@ -14,7 +14,7 @@ from db_utils import (
     insert_new_normalization_entry,
     update_log_status
 )
-# [추가됨] 신규 정규화 모듈 import
+# 신규 정규화 모듈 import
 from text_normalizer import TextNormalizer
 
 
@@ -22,7 +22,7 @@ from text_normalizer import TextNormalizer
 def process_new_queries(db_conn, normalizer: TextNormalizer):
     """
     'is_normalized_hit IS NULL'인 작업을 1개 처리하는 흐름(Flow)만 제어
-    [수정] normalizer 객체를 인자로 받습니다.
+     normalizer 객체를 인자로 받습니다.
     """
     
     with db_conn.cursor() as cursor:
@@ -38,7 +38,7 @@ def process_new_queries(db_conn, normalizer: TextNormalizer):
             
             log_id, raw_query = job
             
-            # --- 2. [신규 V3] 텍스트 정규화 ---
+            # --- 2. 텍스트 정규화 ---
             # TextNormalizer가 [전처리 -> 오타/동의어(Regex) -> 토큰화 -> 재조합]을 모두 수행
             print(f"\n[정제 시작] log_id: {log_id}, raw_query: '{raw_query}'")
             
@@ -49,7 +49,6 @@ def process_new_queries(db_conn, normalizer: TextNormalizer):
             
             
             # --- 3. 정제 결과 판별 ---
-            # (기존: 5단계 결과 / 변경: V3 정규화 결과)
             final_key = normalized_query
             # 원본(전처리 후)과 최종 결과가 다를 때만 '히트'로 간주
             # (참고: normalizer._preprocess는 private이므로 raw_query와 비교)
@@ -57,7 +56,7 @@ def process_new_queries(db_conn, normalizer: TextNormalizer):
             
             print(f"\n[결과] is_hit: {is_hit} (원본과 다름)")
 
-            # --- 4. 정제 키(key) DB에 반영 (기존 로직 동일) ---
+            # --- 4. 정제 키(key) DB에 반영 ---
             # (이 로직은 normalized_query를 캐싱하는 역할)
             
             normalization_id = None
@@ -84,7 +83,7 @@ def process_new_queries(db_conn, normalizer: TextNormalizer):
             print(f"\n--- 작업 완료 (log_id: {log_id}) ---")
 
         except Exception as e:
-            # [수정] 예외 발생 시 롤백
+            # 예외 발생 시 롤백
             print(f"❌ 작업 처리 중 심각한 오류 발생 (log_id: {log_id}): {e}", file=sys.stderr)
             if db_conn:
                 db_conn.rollback() # 오류 발생 시 DB 작업 취소
@@ -92,7 +91,7 @@ def process_new_queries(db_conn, normalizer: TextNormalizer):
             raise
 
 
-# --- '메인' 실행부 (대폭 수정) ---
+# --- '메인' 실행부 ---
 if __name__ == "__main__":
     
     db_conn = None
@@ -105,7 +104,7 @@ if __name__ == "__main__":
             sys.exit(1) # DB 연결 실패 시 종료
         print("✅ PostgreSQL '작업용' 연결 성공")
 
-        # --- B. [신규 V3] 정규화 모듈 준비 ---
+        # --- B. 정규화 모듈 준비 ---
         print("\n--- 텍스트 정규화 모듈(TextNormalizer) 초기화 중... ---")
         # normalizer가 시작 시 Redis에 연결하고, Kiwipiepy를 로드하고, 규칙을 컴파일합니다.
         try:
