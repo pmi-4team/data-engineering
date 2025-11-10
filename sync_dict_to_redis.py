@@ -10,25 +10,23 @@ from typing import Dict
 import sys
 
 
-# --- 1. 설정 (사용자님 설정) ---
 # PostgreSQL 설정
 DB_SETTINGS = {
-    "dbname": "?",      # 👈 데이터베이스 이름
-    "user": "?",      # 👈 사용자 이름
-    "password": "?",     # 👈 비밀번호
-    "host": "?",
+    "dbname": "",      # 👈 데이터베이스 이름
+    "user": "",      # 👈 사용자 이름
+    "password": "",     # 👈 비밀번호
+    "host": "",
     "port": "5432"
 }
 
 # Redis 설정
 REDIS_SETTINGS = {
-    "host": "?",    # 또는 "localhost"
+    "host": "",    # 또는 "localhost"
     "port": 6379,           # Redis 기본 포트
-    "password": None,       # Redis 비밀번호 있으면 입력
+    "password": "",       # Redis 비밀번호 있으면 입력
     "db": 0,                # 기본 데이터베이스 번호
     "decode_responses": True # 문자열로 자동 디코딩
 }
-# --- 설정 끝 ---
 
 
 class DictionarySync:
