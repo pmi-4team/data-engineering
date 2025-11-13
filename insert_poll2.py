@@ -1,24 +1,31 @@
 import pandas as pd
 import psycopg2
 import re
+import os  # os.path.basename을 사용하기 위해 추가
 
 # --- 사용자 설정 ---
 DB_CONFIG = {
-    "dbname": "?",
-    "user": "?",
-    "password": "?!",
-    "host": "?",
-    "port": "5432"
+   "dbname": "f",
+   "user": "",
+   "password": "7",
+   "host": "",
+   "port": "5432"
 }
 
-# 데이터를 읽어올 엑셀 파일 경로
-EXCEL_FILE_PATH = 'C:/Users/ecopl/Desktop/qpoll 데이터/필수/qpoll_join_250624.xlsx'
+# ❗️ 데이터를 읽어올 엑셀 파일 경로 (이 파일을 바꿔가며 실행)
+EXCEL_FILE_PATH = 'C:/Users/ecopl/Desktop/paneldata/Quickpoll/qpoll_join_250723.xlsx'
 
-# 추가: 특정 Poll ID의 최대 선택지 수를 명시 (예외 처리)
-# Poll ID 6번은 7개의 선택지(B열부터 H열까지)를 가지므로, 7로 지정합니다.
+# ------------------
+# ❗️ [수정됨] 예외 처리 목록
+#
+# [참고]
+# 대부분의 파일은 '총참여자수'/'CNT' 헤더를 기반으로 보기를 자동 인식합니다.
+# 이 자동 인식이 실패하는 비정상적인 엑셀 파일이 있을 경우에만
+# {ID: 개수} 형태로 예외를 추가합니다.
+#
+# 현재 모든 파일이 정상 형식이므로, 비워둡니다.
 POLL_MAX_OPTIONS = {
-    6: 7, 
-    # 필요한 다른 Poll ID에 대해서도 {ID: 개수} 형태로 추가 가능
+    # 6: 7, (자동 로직이 더 정확하므로 삭제함)
 } 
 # ------------------
 
@@ -29,13 +36,14 @@ def clean_value(value):
     val_str = str(value).strip()
     return val_str if val_str else None
 
-# --- 🛠️ 수정된 함수: 문항 제목 기반 매핑 및 수동 필터링 적용 ---
+# --- 🛠️ 함수: 문항 제목 기반 매핑 ---
 def get_mapping_from_db_and_excel(cur, file_path):
     """
     DB에서 polls, poll_options 정보를 읽고, 엑셀 문항 제목을 기준으로
     (poll_id, 엑셀 선택지 번호) -> option_id 매핑 정보를 구축합니다.
     """
-    print("-> [1/3] DB 및 엑셀 정보를 사용하여 매핑 정보를 구축합니다...")
+    print(f"\n-> [1/3] 파일 처리 시작: {os.path.basename(file_path)}")
+    print("  - DB 및 엑셀 정보를 사용하여 매핑 정보를 구축합니다...")
     
     # 1. DB의 polls 정보 가져오기: (정규화된 poll_title) -> poll_id 맵 구축
     cur.execute("SELECT poll_id, poll_title FROM polls;")
@@ -71,6 +79,8 @@ def get_mapping_from_db_and_excel(cur, file_path):
     # 엑셀 시트 구조를 순회하며 매핑 구축
     for index in range(1, len(df_polls), 2):
         poll_row = df_polls.iloc[index]
+        header_row = df_polls.iloc[index - 1] # 헤더 행(0, 2, 4...)도 함께 참조
+            
         excel_poll_title = clean_value(poll_row.iloc[0])
         
         if not excel_poll_title:
@@ -93,8 +103,8 @@ def get_mapping_from_db_and_excel(cur, file_path):
         option_start_col_idx = 1 # B열
         option_end_col_idx = len(df_polls.columns) 
         
-        # 기본 필터링: 헤더를 검사하여 통계 컬럼 위치 찾기 (총참여자수/CNT 전까지)
-        for col_idx, col_header_value in enumerate(df_polls.iloc[0]):
+        # 헤더 행(header_row)을 검사하여 통계 컬럼 위치 찾기 (총참여자수/CNT 전까지)
+        for col_idx, col_header_value in enumerate(header_row):
             if col_idx < option_start_col_idx: continue
 
             header_text = clean_value(col_header_value)
@@ -106,12 +116,10 @@ def get_mapping_from_db_and_excel(cur, file_path):
         # 🌟 수동 필터링 적용 (특정 poll_id의 선택지 개수를 강제)
         if max_options is not None:
              target_end_idx = option_start_col_idx + max_options
-             # 이 값이 기존 필터링 결과보다 작을 때만 적용 (안전 장치)
-             # BUT, 여기서는 통계 헤더가 잘못 지정된 경우 (poll_id=6)를 보정해야 하므로
-             # target_end_idx가 더 커도 적용하여 강제로 늘립니다.
+             # 수동 설정값이 자동 인식값보다 클 경우에만 강제로 늘림
              if target_end_idx > option_end_col_idx:
-                  print(f"  ℹ️ 정보: Poll ID {poll_id}에 대해 선택지 끝 인덱스를 {option_end_col_idx}에서 {target_end_idx}로 강제 조정했습니다.")
-             option_end_col_idx = target_end_idx
+                 print(f"  ℹ️ 정보: Poll ID {poll_id}에 대해 선택지 끝 인덱스를 {option_end_col_idx}에서 {target_end_idx}로 강제 조정했습니다.")
+                 option_end_col_idx = target_end_idx
             
         clean_option_data = poll_row.iloc[option_start_col_idx : option_end_col_idx]
         
@@ -193,9 +201,10 @@ def process_user_responses(cur, file_path, option_id_map, poll_ids_in_order):
                         """,
                         (chosen_option_id, poll_id, user_sn)
                     )
-                    processed_count += 1
+                    # cur.rowcount는 0(중복/충돌) 또는 1(신규 삽입)을 반환
+                    processed_count += cur.rowcount 
     
-    print(f"  - 총 {processed_count}개의 유효한 사용자 응답을 저장했습니다.")
+    print(f"  - 총 {processed_count}개의 새로운 유효 응답을 DB에 저장했습니다.")
 
 # --- 메인 실행 로직 (변경 없음) ---
 if __name__ == "__main__":
