@@ -14,7 +14,7 @@ from db_utils import (
     insert_new_normalization_entry,
     update_log_status
 )
-# 정규화 모듈 import
+# 신규 정규화 모듈 import
 from text_normalizer import TextNormalizer
 
 
@@ -62,7 +62,7 @@ def process_new_queries(db_conn, normalizer: TextNormalizer):
 
 
 
-# --- '메인' 실행부 ---
+# --- '메인' 실행부 (대폭 수정) ---
 if __name__ == "__main__":
     
     db_conn = None
@@ -92,7 +92,7 @@ if __name__ == "__main__":
             print(f"❌ 정규화 모듈 초기화 실패: {e}", file=sys.stderr)
             sys.exit(1)
 
-        # --- 본 '작업' 실행 ---
+        # --- C. 본 '작업' 실행 ---
         # db_conn과 초기화된 normalizer 객체를 전달
         process_new_queries(db_conn, normalizer)
 
