@@ -1,34 +1,18 @@
 # config.py
 
-# --- 1. DB 설정 (기존과 동일) ---
-# DB_SETTINGS = {
-#     "dbname": "pre_capstone",
-#     "user": "pre_capstone",
-#     "password": "pre_capstone1234!",
-#     "host": "34.50.13.135",
-#     "port": "5432"
-# }
-
-# --- 2. Redis 설정 (기존과 동일) ---
-REDIS_SETTINGS = {
-    "host": "34.158.214.163",
-    "port": 6379,
-    "password": "pre_capstone1234!",
-    "db": 0,
-    "decode_responses": True
-}
+# --- 1. DB 설정 ---
 DB_SETTINGS = {
-    "dbname": "final",
-    "user": "kjw8567",
-    "password": "8567",
-    "host": "localhost",
+    "dbname": "",
+    "user": "",
+    "password": "",
+    "host": "",
     "port": "5432"
 }
-
+# --- 2. Redis 설정 ---
 # REDIS_SETTINGS = {
-#     "host": "127.0.0.1",  # 또는 "localhost"
+#     "host": "",  # 또는 "localhost"
 #     "port": 6379,          # Redis 기본 포트
-#     "password": None,      # 로컬 Redis는 보통 비밀번호 없음 (또는 "" 또는 이 줄 삭제)
+#     "password": "",     
 #     "db": 0,               # 기본 데이터베이스 번호
 #     "decode_responses": True
 # }
