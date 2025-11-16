@@ -13,10 +13,10 @@ class TextNormalizer:
         self.synonym_rules = self.load_rules_from_redis("SYNONYM")
         print("✅ TextNormalizer: 규칙 로드 완료\n")
 
-        # ✅ 복합어 접미사 목록
+        # 복합어 접미사 목록
         self.compound_suffixes = ['도', '률', '율', '적', '성', '감', '력', '능']
 
-        # ✅ 동사/형용사 어미 확장 세트
+        # 동사/형용사 어미 확장 세트
         self.verb_suffixes = ['하', '해', '했', '하고', '하는', '했다', '하며', '하게', '하여']
 
     # -----------------------------------------------------
@@ -74,6 +74,10 @@ class TextNormalizer:
 
         # 후처리
         text = self.postprocess_text(text)
+
+        # ⭐⭐⭐ 최종 결과를 always lowercase로 변환
+        text = text.lower()
+
         print(f"✅ 최종 결과: {text}")
         print("=" * 60)
 
@@ -86,7 +90,7 @@ class TextNormalizer:
         text = re.sub(r"\s+", " ", text)
         text = re.sub(r"[''""]", "'", text)
         text = re.sub(r"['\"]+", "", text)
-        text = re.sub(r"[^가-힣a-zA-Z0-9\s\.\!\?\~\-\(\)]", " ", text)  # ✅ 괄호 허용
+        text = re.sub(r"[^가-힣a-zA-Z0-9\s\.\!\?\~\-\(\)]", " ", text)  # 괄호 허용
         text = re.sub(r"([.!?~])\1+", r"\1", text)
         text = re.sub(r"([.!?]){2,}$", r"\1", text)
         text = re.sub(r"\s+", " ", text).strip()
@@ -94,7 +98,7 @@ class TextNormalizer:
 
     # -----------------------------------------------------
     def apply_replacements(self, text: str, rules, stage_name: str):
-        """문자열 기반 교체 로직 (부분 겹침 허용 버전)"""
+        """문자열 기반 교체 로직 (부분 겹침 허용)"""
         applied = []
         replaced_spans = []
 
@@ -111,7 +115,7 @@ class TextNormalizer:
 
             escaped = re.escape(term_from).replace(r"\ ", r"\s+")
 
-            # 조사 및 어미 허용
+            # 조사/어미 허용 regex
             if stage_name.lower() == "typo":
                 pattern = re.compile(
                     rf"(?<![가-힣A-Za-z0-9]){escaped}"
@@ -133,19 +137,19 @@ class TextNormalizer:
             for m in matches:
                 start, end = m.span()
 
-                # ✅ 완전히 포함된 경우만 skip (부분 겹침은 허용)
+                # 이미 치환된 영역 skip
                 if any(s <= start and end <= e for s, e in replaced_spans):
                     continue
 
+                # 풍선 효과 방지
                 if '~' in text[max(0, start - 3): min(len(text), end + 3)]:
                     continue
 
-                matched_text = text[start:end]
-                after_match = text[start:start + len(term_to)]
-                if after_match == term_to:
+                # 중복 교체 방지
+                if text[start:start + len(term_to)] == term_to:
                     continue
 
-                # 복합어 보호 (예: "감성적" → "감성" 방지)
+                # 복합어 보호
                 if stage_name.lower() == "synonym":
                     next_char_pos = end
                     if next_char_pos < len(text):
